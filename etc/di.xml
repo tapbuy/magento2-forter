@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <!-- Map CheckoutDataInterface to its implementation -->
+    <preference for="Tapbuy\Forter\Api\Data\CheckoutDataInterface" type="Tapbuy\Forter\Model\CheckoutData"/>
+    <type name="Tapbuy\Forter\Model\CheckoutData" />
+
+    <!-- Map PaymentMethodProviderInterface to CompositePaymentMethodProvider -->
+    <preference for="Tapbuy\Forter\Api\PaymentMethodProviderInterface" type="Tapbuy\Forter\Model\CompositePaymentMethodProvider"/>
+
+    <!-- Plugin to catch payment failures and notify Forter -->
+    <type name="Magento\Sales\Model\Order\Payment">
+        <plugin name="tapbuy_forter_payment_failure" type="Tapbuy\Forter\Plugin\Order\Payment" sortOrder="100"/>
+    </type>
+</config>

@@ -1,0 +1,4 @@
+input TapbuyAdditionalInformation {
+    forter_token: String @doc(description: "Forter token for fraud prevention")
+    collected_forter_data: String @doc(description: "Collected Forter card data as JSON")
+}
