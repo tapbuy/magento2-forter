@@ -13,4 +13,17 @@
     <type name="Magento\Sales\Model\Order\Payment">
         <plugin name="tapbuy_forter_payment_failure" type="Tapbuy\Forter\Plugin\Order\Payment" sortOrder="100"/>
     </type>
+
+    <!-- Inject centralized Tapbuy Logger -->
+    <type name="Tapbuy\Forter\Plugin\Order\Payment">
+        <arguments>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="Tapbuy\Forter\Observer\OrderValidation\PaymentPlaceStart">
+        <arguments>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
+        </arguments>
+    </type>
 </config>
