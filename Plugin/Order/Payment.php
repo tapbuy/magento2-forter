@@ -7,11 +7,11 @@ namespace Tapbuy\Forter\Plugin\Order;
 use Exception;
 use Magento\Framework\HTTP\PhpEnvironment\Request;
 use Magento\Sales\Model\Order\Payment as MagentoPayment;
-use Psr\Log\LoggerInterface;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
 use Tapbuy\Forter\Model\RequestBuilder\Order as OrderRequestBuilder;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
+use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 
 class Payment
 {
@@ -22,14 +22,14 @@ class Payment
      * @param OrderRequestBuilder $orderRequestBuilder
      * @param CheckoutDataInterface $checkoutData
      * @param Request $request
-     * @param LoggerInterface $logger
+     * @param TapbuyLogger $logger
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
         private readonly OrderRequestBuilder $orderRequestBuilder,
         private readonly CheckoutDataInterface $checkoutData,
         private readonly Request $request,
-        private readonly LoggerInterface $logger
+        private readonly TapbuyLogger $logger
     ) {
     }
 
@@ -90,13 +90,13 @@ class Payment
             $this->tapbuyService->sendRequest('/fraud/detection', $payload);
 
             $this->logger->info('Forter payment failure notification sent', [
-                'orderId' => $order->getIncrementId()
+                'order_id' => $order->getIncrementId(),
+                'original_exception' => $e->getMessage(),
             ]);
         } catch (Exception $ex) {
-            $this->logger->error(
-                'Error while trying to send payment failure notification: ' . $ex->getMessage(),
-                ['exception' => $ex->getTraceAsString()]
-            );
+            $this->logger->logException('Failed to send Forter payment failure notification', $ex, [
+                'order_id' => $order->getIncrementId() ?? null,
+            ]);
         }
     }
 }

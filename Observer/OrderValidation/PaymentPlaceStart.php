@@ -10,11 +10,11 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\HTTP\PhpEnvironment\Request;
 use Magento\Framework\Validation\ValidationException;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
-use Psr\Log\LoggerInterface;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
 use Tapbuy\Forter\Model\RequestBuilder\Order as OrderRequestBuilder;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
+use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 
 class PaymentPlaceStart implements ObserverInterface
 {
@@ -38,14 +38,14 @@ class PaymentPlaceStart implements ObserverInterface
     /**
      * @param TapbuyServiceInterface $tapbuyService
      * @param OrderRequestBuilder $orderRequestBuilder
-     * @param LoggerInterface $logger
+     * @param TapbuyLogger $logger
      * @param CheckoutDataInterface $checkoutData
      * @param Request $request
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
         private readonly OrderRequestBuilder $orderRequestBuilder,
-        private readonly LoggerInterface $logger,
+        private readonly TapbuyLogger $logger,
         private readonly CheckoutDataInterface $checkoutData,
         private readonly Request $request
     ) {
@@ -116,10 +116,11 @@ class PaymentPlaceStart implements ObserverInterface
             $this->checkoutData->setThreeDsAuthOnExclusion($threeDsAuthOnExclusion);
 
             $this->logger->info('Forter fraud detection result', [
-                'orderId' => $order->getIncrementId(),
+                'order_id' => $order->getIncrementId(),
                 'status' => $data[self::RESPONSE_STATUS_KEY] ?? null,
                 'decision' => $forterDecision,
-                'recommendation' => $recommendation
+                'recommendation' => $recommendation,
+                '3ds_auth_on_exclusion' => $threeDsAuthOnExclusion,
             ]);
 
             if ($forterDecision !== self::ACTION_DECLINE) {
@@ -128,22 +129,24 @@ class PaymentPlaceStart implements ObserverInterface
 
             // If Forter recommends 3DS challenge, let the payment proceed to give customer a chance to verify
             if (in_array('VERIFICATION_REQUIRED_3DS_CHALLENGE', $recommendations, true)) {
+                $this->logger->info('Forter decline bypassed for 3DS challenge', [
+                    'order_id' => $order->getIncrementId(),
+                ]);
                 return;
             }
 
             $isPaymentDeclined = true;
 
             $this->logger->warning('Forter declined order', [
-                'orderId' => $order->getIncrementId(),
-                'recommendations' => $recommendations
+                'order_id' => $order->getIncrementId(),
+                'recommendations' => $recommendations,
             ]);
         } catch (PaymentDeclinedException $e) {
             throw $e;
         } catch (Exception $e) {
-            $this->logger->error(
-                'Error during payment place start: ' . $e->getMessage(),
-                ['exception' => $e->getTraceAsString()]
-            );
+            $this->logger->logException('Error during Forter fraud detection', $e, [
+                'order_id' => isset($order) ? $order->getIncrementId() : null,
+            ]);
         }
 
         if ($isPaymentDeclined) {
