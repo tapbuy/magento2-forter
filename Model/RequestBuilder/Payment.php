@@ -10,8 +10,9 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 use InvalidArgumentException as BaseInvalidArgumentException;
 use Magento\Framework\Exception\InvalidArgumentException;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
+use Tapbuy\Forter\Api\RequestBuilder\PaymentBuilderInterface;
 
-class Payment
+class Payment implements PaymentBuilderInterface
 {
     /**
      * @param CheckoutDataInterface $checkoutData

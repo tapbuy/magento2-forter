@@ -10,11 +10,11 @@ use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Validation\ValidationException;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
+use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
-use Tapbuy\Forter\Model\RequestBuilder\Order as OrderRequestBuilder;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
-use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 
 class PaymentPlaceStart implements ObserverInterface
 {
@@ -37,15 +37,15 @@ class PaymentPlaceStart implements ObserverInterface
 
     /**
      * @param TapbuyServiceInterface $tapbuyService
-     * @param OrderRequestBuilder $orderRequestBuilder
-     * @param TapbuyLogger $logger
+     * @param OrderBuilderInterface $orderRequestBuilder
+     * @param LoggerInterface $logger
      * @param CheckoutDataInterface $checkoutData
      * @param TapbuyRequestDetectorInterface $requestDetector
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
-        private readonly OrderRequestBuilder $orderRequestBuilder,
-        private readonly TapbuyLogger $logger,
+        private readonly OrderBuilderInterface $orderRequestBuilder,
+        private readonly LoggerInterface $logger,
         private readonly CheckoutDataInterface $checkoutData,
         private readonly TapbuyRequestDetectorInterface $requestDetector
     ) {

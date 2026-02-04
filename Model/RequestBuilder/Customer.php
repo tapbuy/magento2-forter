@@ -11,8 +11,9 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderAddressInterface;
+use Tapbuy\Forter\Api\RequestBuilder\CustomerBuilderInterface;
 
-class Customer
+class Customer implements CustomerBuilderInterface
 {
     private const DELIVERY_TYPE_PHYSICAL = 'PHYSICAL';
     private const DELIVERY_TYPE_DIGITAL = 'DIGITAL';
