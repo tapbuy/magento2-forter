@@ -9,6 +9,22 @@
     <!-- Map PaymentMethodProviderInterface to CompositePaymentMethodProvider -->
     <preference for="Tapbuy\Forter\Api\PaymentMethodProviderInterface" type="Tapbuy\Forter\Model\CompositePaymentMethodProvider"/>
 
+    <!-- Request Builder Interfaces -->
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\Order"/>
+
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\BasicInfoBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\BasicInfo"/>
+
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\CartBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\Cart"/>
+
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\CustomerBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\Customer"/>
+
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\PaymentBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\Payment"/>
+
     <!-- Plugin to catch payment failures and notify Forter -->
     <type name="Magento\Sales\Model\Order\Payment">
         <plugin name="tapbuy_forter_payment_failure" type="Tapbuy\Forter\Plugin\Order\Payment" sortOrder="100"/>

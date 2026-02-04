@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Tapbuy\Forter\Model\RequestBuilder;
 
 use Magento\Sales\Api\Data\OrderInterface;
+use Tapbuy\Forter\Api\RequestBuilder\CartBuilderInterface;
 
-class Cart
+class Cart implements CartBuilderInterface
 {
     /**
      * Get total amount.

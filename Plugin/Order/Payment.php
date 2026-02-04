@@ -7,11 +7,11 @@ namespace Tapbuy\Forter\Plugin\Order;
 use Exception;
 use Magento\Sales\Model\Order\Payment as MagentoPayment;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
+use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
-use Tapbuy\Forter\Model\RequestBuilder\Order as OrderRequestBuilder;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
-use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 
 class Payment
 {
@@ -19,17 +19,17 @@ class Payment
 
     /**
      * @param TapbuyServiceInterface $tapbuyService
-     * @param OrderRequestBuilder $orderRequestBuilder
+     * @param OrderBuilderInterface $orderRequestBuilder
      * @param CheckoutDataInterface $checkoutData
      * @param TapbuyRequestDetectorInterface $requestDetector
-     * @param TapbuyLogger $logger
+     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
-        private readonly OrderRequestBuilder $orderRequestBuilder,
+        private readonly OrderBuilderInterface $orderRequestBuilder,
         private readonly CheckoutDataInterface $checkoutData,
         private readonly TapbuyRequestDetectorInterface $requestDetector,
-        private readonly TapbuyLogger $logger
+        private readonly LoggerInterface $logger
     ) {
     }
 
