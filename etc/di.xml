@@ -25,11 +25,6 @@
     <preference for="Tapbuy\Forter\Api\RequestBuilder\PaymentBuilderInterface"
                 type="Tapbuy\Forter\Model\RequestBuilder\Payment"/>
 
-    <!-- Plugin to catch payment failures and notify Forter -->
-    <type name="Magento\Sales\Model\Order\Payment">
-        <plugin name="tapbuy_forter_payment_failure" type="Tapbuy\Forter\Plugin\Order\Payment" sortOrder="100"/>
-    </type>
-
     <!-- Inject centralized Tapbuy Logger via interface (resolved via preference in redirect-tracking) -->
     <type name="Tapbuy\Forter\Plugin\Order\Payment">
         <arguments>
