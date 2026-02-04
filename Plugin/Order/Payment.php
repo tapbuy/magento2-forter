@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tapbuy\Forter\Plugin\Order;
 
 use Exception;
-use Magento\Framework\HTTP\PhpEnvironment\Request;
 use Magento\Sales\Model\Order\Payment as MagentoPayment;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
 use Tapbuy\Forter\Model\RequestBuilder\Order as OrderRequestBuilder;
+use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
 use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 
@@ -21,14 +21,14 @@ class Payment
      * @param TapbuyServiceInterface $tapbuyService
      * @param OrderRequestBuilder $orderRequestBuilder
      * @param CheckoutDataInterface $checkoutData
-     * @param Request $request
+     * @param TapbuyRequestDetectorInterface $requestDetector
      * @param TapbuyLogger $logger
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
         private readonly OrderRequestBuilder $orderRequestBuilder,
         private readonly CheckoutDataInterface $checkoutData,
-        private readonly Request $request,
+        private readonly TapbuyRequestDetectorInterface $requestDetector,
         private readonly TapbuyLogger $logger
     ) {
     }
@@ -62,7 +62,7 @@ class Payment
     {
         try {
             // Only process payments from Tapbuy headless checkout
-            if (!$this->request->getHeader('X-Tapbuy-Call')) {
+            if (!$this->requestDetector->isTapbuyCall()) {
                 return;
             }
 

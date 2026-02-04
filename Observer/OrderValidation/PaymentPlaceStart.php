@@ -7,12 +7,12 @@ namespace Tapbuy\Forter\Observer\OrderValidation;
 use Exception;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\HTTP\PhpEnvironment\Request;
 use Magento\Framework\Validation\ValidationException;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
 use Tapbuy\Forter\Model\RequestBuilder\Order as OrderRequestBuilder;
+use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
 use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 
@@ -40,14 +40,14 @@ class PaymentPlaceStart implements ObserverInterface
      * @param OrderRequestBuilder $orderRequestBuilder
      * @param TapbuyLogger $logger
      * @param CheckoutDataInterface $checkoutData
-     * @param Request $request
+     * @param TapbuyRequestDetectorInterface $requestDetector
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
         private readonly OrderRequestBuilder $orderRequestBuilder,
         private readonly TapbuyLogger $logger,
         private readonly CheckoutDataInterface $checkoutData,
-        private readonly Request $request
+        private readonly TapbuyRequestDetectorInterface $requestDetector
     ) {
     }
 
@@ -67,7 +67,7 @@ class PaymentPlaceStart implements ObserverInterface
             $payment = $observer->getEvent()->getPayment();
 
             // Only process payments from Tapbuy headless checkout.
-            if (!$this->request->getHeader('X-Tapbuy-Call')) {
+            if (!$this->requestDetector->isTapbuyCall()) {
                 return;
             }
 
