@@ -15,7 +15,7 @@ use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 
 /**
- * Interface OrderInterface
+ * Interface OrderBuilderInterface
  *
  * Provides order request building for Forter fraud detection.
  */
