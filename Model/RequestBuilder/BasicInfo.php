@@ -69,7 +69,6 @@ class BasicInfo implements BasicInfoBuilderInterface
         ];
     }
 
-
     /**
      * Get user agent.
      *

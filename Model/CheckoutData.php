@@ -12,10 +12,19 @@ use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
  */
 class CheckoutData implements CheckoutDataInterface
 {
+    /**
+     * @var string|null
+     */
     private ?string $forterToken = null;
 
+    /**
+     * @var string|null
+     */
     private ?string $collectedForterData = null;
 
+    /**
+     * @var string
+     */
     private string $threeDsAuthOnExclusion = self::THREE_DS_AUTH_ALWAYS;
 
     /**

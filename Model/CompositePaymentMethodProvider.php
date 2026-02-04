@@ -25,14 +25,14 @@ class CompositePaymentMethodProvider implements PaymentMethodProviderInterface
      */
     public function getPaymentMethods(): array
     {
-        $methods = [];
+        $methodsCollections = [];
 
         foreach ($this->providers as $provider) {
             if ($provider instanceof PaymentMethodProviderInterface) {
-                $methods = array_merge($methods, $provider->getPaymentMethods());
+                $methodsCollections[] = $provider->getPaymentMethods();
             }
         }
 
-        return array_unique($methods);
+        return array_unique(array_merge(...$methodsCollections));
     }
 }

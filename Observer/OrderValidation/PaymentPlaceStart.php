@@ -96,7 +96,8 @@ class PaymentPlaceStart implements ObserverInterface
             $forterDecision = strtolower($data[self::RESPONSE_FORTER_DECISION_KEY] ?? '');
             $recommendation = $data[self::RESPONSE_RECOMMENDATION_KEY] ?? '';
             $recommendations = !empty($recommendation) ? [$recommendation] : [];
-            $threeDsAuthOnExclusion = $data[self::RESPONSE_THREE_DS_AUTH_ON_EXCLUSION_KEY] ?? CheckoutDataInterface::THREE_DS_AUTH_ALWAYS;
+            $threeDsAuthOnExclusion = $data[self::RESPONSE_THREE_DS_AUTH_ON_EXCLUSION_KEY]
+                ?? CheckoutDataInterface::THREE_DS_AUTH_ALWAYS;
 
             // Store decision in payment additional information
             $payment->setAdditionalInformation(

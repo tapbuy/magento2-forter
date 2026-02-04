@@ -122,7 +122,7 @@ class Customer implements CustomerBuilderInterface
         try {
             $customer = $this->getCustomer($order);
         } catch (NoSuchEntityException | LocalizedException $e) {
-            // Do nothing.
+            // Customer not found or not logged in - this is expected for guest orders
         }
         // Customer not logged in.
         if ($customer === null) {
