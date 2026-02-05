@@ -45,20 +45,20 @@ class Payment
     {
         try {
             return $proceed();
-        } catch (Exception $e) {
-            $this->notifyForterOfPaymentFailure($e, $subject);
-            throw $e;
+        } catch (Exception $exception) {
+            $this->notifyForterOfPaymentFailure($exception, $subject);
+            throw $exception;
         }
     }
 
     /**
      * Send exception notification to TapBuy/Forter.
      *
-     * @param Exception $e
+     * @param Exception $exception
      * @param MagentoPayment $subject
      * @return void
      */
-    private function notifyForterOfPaymentFailure(Exception $e, MagentoPayment $subject): void
+    private function notifyForterOfPaymentFailure(Exception $exception, MagentoPayment $subject): void
     {
         try {
             // Only process payments from Tapbuy headless checkout
@@ -74,7 +74,7 @@ class Payment
                 return;
             }
 
-            if ($e instanceof PaymentDeclinedException) {
+            if ($exception instanceof PaymentDeclinedException) {
                 // Do not report payment decline exception thrown by Forter itself.
                 return;
             }
@@ -91,7 +91,7 @@ class Payment
 
             $this->logger->info('Forter payment failure notification sent', [
                 'order_id' => $order->getIncrementId(),
-                'original_exception' => $e->getMessage(),
+                'original_exception' => $exception->getMessage(),
             ]);
         } catch (Exception $ex) {
             $this->logger->logException('Failed to send Forter payment failure notification', $ex, [
