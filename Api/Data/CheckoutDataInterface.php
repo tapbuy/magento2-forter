@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tapbuy\Forter\Api\Data;
 
 use Magento\Sales\Api\Data\OrderPaymentInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyConstants;
 
 interface CheckoutDataInterface
 {
-    public const TAPBUY_ADDITIONAL_INFORMATION_KEY = 'tapbuy';
+    public const TAPBUY_ADDITIONAL_INFORMATION_KEY = TapbuyConstants::PAYMENT_ADDITIONAL_INFO_KEY;
     public const FORTER_TOKEN_KEY = 'forter_token';
 
     public const COLLECTED_FORTER_DATA_KEY = 'collected_forter_data';

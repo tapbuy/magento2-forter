@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tapbuy\Forter\Plugin\Order;
 
 use Exception;
-use Magento\Framework\HTTP\PhpEnvironment\Request;
 use Magento\Sales\Model\Order\Payment as MagentoPayment;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
+use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
-use Tapbuy\Forter\Model\RequestBuilder\Order as OrderRequestBuilder;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
-use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 
 class Payment
 {
@@ -19,17 +19,17 @@ class Payment
 
     /**
      * @param TapbuyServiceInterface $tapbuyService
-     * @param OrderRequestBuilder $orderRequestBuilder
+     * @param OrderBuilderInterface $orderRequestBuilder
      * @param CheckoutDataInterface $checkoutData
-     * @param Request $request
-     * @param TapbuyLogger $logger
+     * @param TapbuyRequestDetectorInterface $requestDetector
+     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
-        private readonly OrderRequestBuilder $orderRequestBuilder,
+        private readonly OrderBuilderInterface $orderRequestBuilder,
         private readonly CheckoutDataInterface $checkoutData,
-        private readonly Request $request,
-        private readonly TapbuyLogger $logger
+        private readonly TapbuyRequestDetectorInterface $requestDetector,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -45,24 +45,24 @@ class Payment
     {
         try {
             return $proceed();
-        } catch (Exception $e) {
-            $this->notifyForterOfPaymentFailure($e, $subject);
-            throw $e;
+        } catch (Exception $exception) {
+            $this->notifyForterOfPaymentFailure($exception, $subject);
+            throw $exception;
         }
     }
 
     /**
      * Send exception notification to TapBuy/Forter.
      *
-     * @param Exception $e
+     * @param Exception $exception
      * @param MagentoPayment $subject
      * @return void
      */
-    private function notifyForterOfPaymentFailure(Exception $e, MagentoPayment $subject): void
+    private function notifyForterOfPaymentFailure(Exception $exception, MagentoPayment $subject): void
     {
         try {
             // Only process payments from Tapbuy headless checkout
-            if (!$this->request->getHeader('X-Tapbuy-Call')) {
+            if (!$this->requestDetector->isTapbuyCall()) {
                 return;
             }
 
@@ -74,7 +74,7 @@ class Payment
                 return;
             }
 
-            if ($e instanceof PaymentDeclinedException) {
+            if ($exception instanceof PaymentDeclinedException) {
                 // Do not report payment decline exception thrown by Forter itself.
                 return;
             }
@@ -91,7 +91,7 @@ class Payment
 
             $this->logger->info('Forter payment failure notification sent', [
                 'order_id' => $order->getIncrementId(),
-                'original_exception' => $e->getMessage(),
+                'original_exception' => $exception->getMessage(),
             ]);
         } catch (Exception $ex) {
             $this->logger->logException('Failed to send Forter payment failure notification', $ex, [

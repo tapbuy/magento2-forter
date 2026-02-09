@@ -9,21 +9,32 @@
     <!-- Map PaymentMethodProviderInterface to CompositePaymentMethodProvider -->
     <preference for="Tapbuy\Forter\Api\PaymentMethodProviderInterface" type="Tapbuy\Forter\Model\CompositePaymentMethodProvider"/>
 
-    <!-- Plugin to catch payment failures and notify Forter -->
-    <type name="Magento\Sales\Model\Order\Payment">
-        <plugin name="tapbuy_forter_payment_failure" type="Tapbuy\Forter\Plugin\Order\Payment" sortOrder="100"/>
-    </type>
+    <!-- Request Builder Interfaces -->
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\Order"/>
 
-    <!-- Inject centralized Tapbuy Logger -->
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\BasicInfoBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\BasicInfo"/>
+
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\CartBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\Cart"/>
+
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\CustomerBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\Customer"/>
+
+    <preference for="Tapbuy\Forter\Api\RequestBuilder\PaymentBuilderInterface"
+                type="Tapbuy\Forter\Model\RequestBuilder\Payment"/>
+
+    <!-- Inject centralized Tapbuy Logger via interface (resolved via preference in redirect-tracking) -->
     <type name="Tapbuy\Forter\Plugin\Order\Payment">
         <arguments>
-            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Api\LoggerInterface</argument>
         </arguments>
     </type>
 
     <type name="Tapbuy\Forter\Observer\OrderValidation\PaymentPlaceStart">
         <arguments>
-            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Logger\TapbuyLogger</argument>
+            <argument name="logger" xsi:type="object">Tapbuy\RedirectTracking\Api\LoggerInterface</argument>
         </arguments>
     </type>
 </config>

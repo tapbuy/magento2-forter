@@ -7,14 +7,14 @@ namespace Tapbuy\Forter\Observer\OrderValidation;
 use Exception;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\HTTP\PhpEnvironment\Request;
 use Magento\Framework\Validation\ValidationException;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
+use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
-use Tapbuy\Forter\Model\RequestBuilder\Order as OrderRequestBuilder;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
+use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
-use Tapbuy\RedirectTracking\Logger\TapbuyLogger;
 
 class PaymentPlaceStart implements ObserverInterface
 {
@@ -37,17 +37,17 @@ class PaymentPlaceStart implements ObserverInterface
 
     /**
      * @param TapbuyServiceInterface $tapbuyService
-     * @param OrderRequestBuilder $orderRequestBuilder
-     * @param TapbuyLogger $logger
+     * @param OrderBuilderInterface $orderRequestBuilder
+     * @param LoggerInterface $logger
      * @param CheckoutDataInterface $checkoutData
-     * @param Request $request
+     * @param TapbuyRequestDetectorInterface $requestDetector
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
-        private readonly OrderRequestBuilder $orderRequestBuilder,
-        private readonly TapbuyLogger $logger,
+        private readonly OrderBuilderInterface $orderRequestBuilder,
+        private readonly LoggerInterface $logger,
         private readonly CheckoutDataInterface $checkoutData,
-        private readonly Request $request
+        private readonly TapbuyRequestDetectorInterface $requestDetector
     ) {
     }
 
@@ -67,7 +67,7 @@ class PaymentPlaceStart implements ObserverInterface
             $payment = $observer->getEvent()->getPayment();
 
             // Only process payments from Tapbuy headless checkout.
-            if (!$this->request->getHeader('X-Tapbuy-Call')) {
+            if (!$this->requestDetector->isTapbuyCall()) {
                 return;
             }
 
@@ -96,7 +96,8 @@ class PaymentPlaceStart implements ObserverInterface
             $forterDecision = strtolower($data[self::RESPONSE_FORTER_DECISION_KEY] ?? '');
             $recommendation = $data[self::RESPONSE_RECOMMENDATION_KEY] ?? '';
             $recommendations = !empty($recommendation) ? [$recommendation] : [];
-            $threeDsAuthOnExclusion = $data[self::RESPONSE_THREE_DS_AUTH_ON_EXCLUSION_KEY] ?? CheckoutDataInterface::THREE_DS_AUTH_ALWAYS;
+            $threeDsAuthOnExclusion = $data[self::RESPONSE_THREE_DS_AUTH_ON_EXCLUSION_KEY]
+                ?? CheckoutDataInterface::THREE_DS_AUTH_ALWAYS;
 
             // Store decision in payment additional information
             $payment->setAdditionalInformation(

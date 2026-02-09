@@ -6,26 +6,27 @@ namespace Tapbuy\Forter\Model\RequestBuilder;
 
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
-use Tapbuy\Forter\Model\RequestBuilder\BasicInfo as BasicInfoRequestBuilder;
-use Tapbuy\Forter\Model\RequestBuilder\Cart as CartRequestBuilder;
-use Tapbuy\Forter\Model\RequestBuilder\Customer as CustomerRequestBuilder;
-use Tapbuy\Forter\Model\RequestBuilder\Payment as PaymentRequestBuilder;
+use Tapbuy\Forter\Api\RequestBuilder\BasicInfoBuilderInterface;
+use Tapbuy\Forter\Api\RequestBuilder\CartBuilderInterface;
+use Tapbuy\Forter\Api\RequestBuilder\CustomerBuilderInterface;
+use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
+use Tapbuy\Forter\Api\RequestBuilder\PaymentBuilderInterface;
 
-class Order
+class Order implements OrderBuilderInterface
 {
     private const AUTHORIZATION_STEP_PRE = 'PRE_AUTHORIZATION';
 
     /**
-     * @param BasicInfoRequestBuilder $basicInfoRequestBuilder
-     * @param CartRequestBuilder $cartRequestBuilder
-     * @param CustomerRequestBuilder $customerRequestBuilder
-     * @param PaymentRequestBuilder $paymentRequestBuilder
+     * @param BasicInfoBuilderInterface $basicInfoRequestBuilder
+     * @param CartBuilderInterface $cartRequestBuilder
+     * @param CustomerBuilderInterface $customerRequestBuilder
+     * @param PaymentBuilderInterface $paymentRequestBuilder
      */
     public function __construct(
-        private readonly BasicInfoRequestBuilder $basicInfoRequestBuilder,
-        private readonly CartRequestBuilder $cartRequestBuilder,
-        private readonly CustomerRequestBuilder $customerRequestBuilder,
-        private readonly PaymentRequestBuilder $paymentRequestBuilder
+        private readonly BasicInfoBuilderInterface $basicInfoRequestBuilder,
+        private readonly CartBuilderInterface $cartRequestBuilder,
+        private readonly CustomerBuilderInterface $customerRequestBuilder,
+        private readonly PaymentBuilderInterface $paymentRequestBuilder
     ) {
     }
 

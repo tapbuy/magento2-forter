@@ -7,8 +7,9 @@ namespace Tapbuy\Forter\Model\RequestBuilder;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
+use Tapbuy\Forter\Api\RequestBuilder\BasicInfoBuilderInterface;
 
-class BasicInfo
+class BasicInfo implements BasicInfoBuilderInterface
 {
     private const MAX_HEADER_LENGTH = 4000;
 
@@ -67,7 +68,6 @@ class BasicInfo
             ]
         ];
     }
-
 
     /**
      * Get user agent.
