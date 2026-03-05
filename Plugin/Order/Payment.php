@@ -23,6 +23,7 @@ class Payment
      * @param OrderBuilderInterface $orderRequestBuilder
      * @param CheckoutDataInterface $checkoutData
      * @param TapbuyRequestDetectorInterface $requestDetector
+     * @param ConfigInterface $config
      * @param LoggerInterface $logger
      */
     public function __construct(

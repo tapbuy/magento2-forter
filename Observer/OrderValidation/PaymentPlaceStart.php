@@ -42,6 +42,7 @@ class PaymentPlaceStart implements ObserverInterface
      * @param LoggerInterface $logger
      * @param CheckoutDataInterface $checkoutData
      * @param TapbuyRequestDetectorInterface $requestDetector
+     * @param ConfigInterface $config
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
