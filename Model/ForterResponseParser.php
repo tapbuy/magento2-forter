@@ -25,7 +25,7 @@ class ForterResponseParser
     public const RESPONSE_THREE_DS_AUTH_ON_EXCLUSION_KEY = 'threeDsAuthOnExclusion';
 
     /**
-     * Validate a Forter API response and return its inner data payload.
+     * Parse a Forter API response and return its inner data payload.
      *
      * The Tapbuy API wraps Forter responses as {success: true, data: {...}}.
      * This method validates the outer envelope and returns the inner data array.
@@ -34,7 +34,7 @@ class ForterResponseParser
      * @return array The validated data sub-array from the response envelope
      * @throws ValidationException If the response is absent, malformed, or missing required fields
      */
-    public function validate(mixed $response): array
+    public function parse(mixed $response): array
     {
         if ($response === false || $response === null) {
             throw new ValidationException(__('No response received from fraud detection service.'));

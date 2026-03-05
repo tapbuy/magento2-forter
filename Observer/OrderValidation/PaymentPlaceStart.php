@@ -88,7 +88,7 @@ class PaymentPlaceStart implements ObserverInterface
             $response = $this->tapbuyService->sendRequest('/fraud/detection', $payload);
 
             // Validate response envelope and extract inner data payload
-            $data = $this->responseParser->validate($response);
+            $data = $this->responseParser->parse($response);
             $forterDecision = strtolower($data[ForterResponseParser::RESPONSE_FORTER_DECISION_KEY] ?? '');
             $recommendation = $data[ForterResponseParser::RESPONSE_RECOMMENDATION_KEY] ?? '';
             $recommendations = !empty($recommendation) ? [$recommendation] : [];
