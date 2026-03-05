@@ -9,6 +9,7 @@ use Magento\Sales\Model\Order\Payment as MagentoPayment;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
 use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
@@ -29,6 +30,7 @@ class Payment
         private readonly OrderBuilderInterface $orderRequestBuilder,
         private readonly CheckoutDataInterface $checkoutData,
         private readonly TapbuyRequestDetectorInterface $requestDetector,
+        private readonly ConfigInterface $config,
         private readonly LoggerInterface $logger
     ) {
     }
@@ -61,8 +63,8 @@ class Payment
     private function notifyForterOfPaymentFailure(Exception $exception, MagentoPayment $subject): void
     {
         try {
-            // Only process payments from Tapbuy headless checkout
-            if (!$this->requestDetector->isTapbuyCall()) {
+            // Only process payments from Tapbuy headless checkout when enabled.
+            if (!$this->requestDetector->isTapbuyCall() || !$this->config->isEnabled()) {
                 return;
             }
 

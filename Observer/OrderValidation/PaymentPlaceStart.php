@@ -12,6 +12,7 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
 use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
+use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyServiceInterface;
@@ -47,7 +48,8 @@ class PaymentPlaceStart implements ObserverInterface
         private readonly OrderBuilderInterface $orderRequestBuilder,
         private readonly LoggerInterface $logger,
         private readonly CheckoutDataInterface $checkoutData,
-        private readonly TapbuyRequestDetectorInterface $requestDetector
+        private readonly TapbuyRequestDetectorInterface $requestDetector,
+        private readonly ConfigInterface $config
     ) {
     }
 
@@ -66,8 +68,8 @@ class PaymentPlaceStart implements ObserverInterface
             /** @var OrderPaymentInterface $payment */
             $payment = $observer->getEvent()->getPayment();
 
-            // Only process payments from Tapbuy headless checkout.
-            if (!$this->requestDetector->isTapbuyCall()) {
+            // Only process payments from Tapbuy headless checkout when enabled.
+            if (!$this->requestDetector->isTapbuyCall() || !$this->config->isEnabled()) {
                 return;
             }
 
