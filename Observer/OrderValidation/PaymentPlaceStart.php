@@ -7,11 +7,11 @@ namespace Tapbuy\Forter\Observer\OrderValidation;
 use Exception;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
-use Magento\Framework\Validation\ValidationException;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
 use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
 use Tapbuy\Forter\Exception\PaymentDeclinedException;
+use Tapbuy\Forter\Model\ForterResponseParser;
 use Tapbuy\RedirectTracking\Api\ConfigInterface;
 use Tapbuy\RedirectTracking\Api\LoggerInterface;
 use Tapbuy\RedirectTracking\Api\TapbuyRequestDetectorInterface;
@@ -25,13 +25,6 @@ class PaymentPlaceStart implements ObserverInterface
 
     private const ORDER_STAGE_BEFORE_PAYMENT = 'BEFORE_PAYMENT_ACTION';
 
-    // Response keys from tapbuy-api (wrapped in {success: true, data: {...}})
-    private const RESPONSE_DATA_KEY = 'data';
-    private const RESPONSE_STATUS_KEY = 'status';
-    private const RESPONSE_FORTER_DECISION_KEY = 'forterDecision';
-    private const RESPONSE_RECOMMENDATION_KEY = 'recommendation';
-    private const RESPONSE_THREE_DS_AUTH_ON_EXCLUSION_KEY = 'threeDsAuthOnExclusion';
-
     private const ACTION_DECLINE = 'decline';
 
     public const DEFAULT_DECLINE_MESSAGE = 'The order can\'t be placed.';
@@ -43,6 +36,7 @@ class PaymentPlaceStart implements ObserverInterface
      * @param CheckoutDataInterface $checkoutData
      * @param TapbuyRequestDetectorInterface $requestDetector
      * @param ConfigInterface $config
+     * @param ForterResponseParser $responseParser
      */
     public function __construct(
         private readonly TapbuyServiceInterface $tapbuyService,
@@ -50,7 +44,8 @@ class PaymentPlaceStart implements ObserverInterface
         private readonly LoggerInterface $logger,
         private readonly CheckoutDataInterface $checkoutData,
         private readonly TapbuyRequestDetectorInterface $requestDetector,
-        private readonly ConfigInterface $config
+        private readonly ConfigInterface $config,
+        private readonly ForterResponseParser $responseParser
     ) {
     }
 
@@ -92,14 +87,12 @@ class PaymentPlaceStart implements ObserverInterface
 
             $response = $this->tapbuyService->sendRequest('/fraud/detection', $payload);
 
-            $this->validateResponse($response);
-
-            // Extract data from response wrapper
-            $data = $response[self::RESPONSE_DATA_KEY];
-            $forterDecision = strtolower($data[self::RESPONSE_FORTER_DECISION_KEY] ?? '');
-            $recommendation = $data[self::RESPONSE_RECOMMENDATION_KEY] ?? '';
+            // Validate response envelope and extract inner data payload
+            $data = $this->responseParser->validate($response);
+            $forterDecision = strtolower($data[ForterResponseParser::RESPONSE_FORTER_DECISION_KEY] ?? '');
+            $recommendation = $data[ForterResponseParser::RESPONSE_RECOMMENDATION_KEY] ?? '';
             $recommendations = !empty($recommendation) ? [$recommendation] : [];
-            $threeDsAuthOnExclusion = $data[self::RESPONSE_THREE_DS_AUTH_ON_EXCLUSION_KEY]
+            $threeDsAuthOnExclusion = $data[ForterResponseParser::RESPONSE_THREE_DS_AUTH_ON_EXCLUSION_KEY]
                 ?? CheckoutDataInterface::THREE_DS_AUTH_ALWAYS;
 
             // Store decision in payment additional information
@@ -121,7 +114,7 @@ class PaymentPlaceStart implements ObserverInterface
 
             $this->logger->info('Forter fraud detection result', [
                 'order_id' => $order->getIncrementId(),
-                'status' => $data[self::RESPONSE_STATUS_KEY] ?? null,
+                'status' => $data[ForterResponseParser::RESPONSE_STATUS_KEY] ?? null,
                 'decision' => $forterDecision,
                 'recommendation' => $recommendation,
                 '3ds_auth_on_exclusion' => $threeDsAuthOnExclusion,
@@ -156,34 +149,6 @@ class PaymentPlaceStart implements ObserverInterface
         if ($isPaymentDeclined) {
             // Break payment process with the error message to the customer.
             throw new PaymentDeclinedException(__($this->getPreDeclineMsg()));
-        }
-    }
-
-    /**
-     * Validate Forter response.
-     *
-     * @param mixed $response
-     * @return void
-     * @throws ValidationException
-     */
-    private function validateResponse(mixed $response): void
-    {
-        if ($response === false || $response === null) {
-            throw new ValidationException(__('No response received from fraud detection service.'));
-        }
-
-        if (!is_array($response)) {
-            throw new ValidationException(__('Invalid response type from fraud detection service.'));
-        }
-
-        // Response is wrapped in {success: true, data: {...}}
-        if (!array_key_exists(self::RESPONSE_DATA_KEY, $response) || !is_array($response[self::RESPONSE_DATA_KEY])) {
-            throw new ValidationException(__('Unexpected response structure: ' . json_encode($response)));
-        }
-
-        $data = $response[self::RESPONSE_DATA_KEY];
-        if (!array_key_exists(self::RESPONSE_FORTER_DECISION_KEY, $data)) {
-            throw new ValidationException(__('Missing forterDecision in response: ' . json_encode($response)));
         }
     }
 
