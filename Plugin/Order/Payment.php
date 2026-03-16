@@ -95,9 +95,14 @@ class Payment
                 'order_id' => $order->getIncrementId(),
                 'original_exception' => $exception->getMessage(),
             ]);
-        } catch (\RuntimeException $ex) {
+        } catch (\Throwable $ex) {
+            // Best-effort notification — must never replace the original payment exception.
+            $orderId = null;
+            if (isset($order) && $order !== null) {
+                $orderId = $order->getIncrementId();
+            }
             $this->logger->logException('Failed to send Forter payment failure notification', $ex, [
-                'order_id' => $order->getIncrementId() ?? null,
+                'order_id' => $orderId,
             ]);
         }
     }
