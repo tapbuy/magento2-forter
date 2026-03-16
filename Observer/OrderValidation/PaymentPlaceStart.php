@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tapbuy\Forter\Observer\OrderValidation;
 
-use Exception;
 use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Validation\ValidationException;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
 use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
@@ -140,8 +141,16 @@ class PaymentPlaceStart implements ObserverInterface
             ]);
         } catch (PaymentDeclinedException $e) {
             throw $e;
-        } catch (Exception $e) {
-            $this->logger->logException('Error during Forter fraud detection', $e, [
+        } catch (ValidationException $e) {
+            $this->logger->logException('Forter fraud detection returned an unexpected or invalid response', $e, [
+                'order_id' => isset($order) ? $order->getIncrementId() : null,
+            ]);
+        } catch (LocalizedException $e) {
+            $this->logger->logException('Magento-level error during Forter fraud detection', $e, [
+                'order_id' => isset($order) ? $order->getIncrementId() : null,
+            ]);
+        } catch (\RuntimeException $e) {
+            $this->logger->logException('Runtime error during Forter fraud detection', $e, [
                 'order_id' => isset($order) ? $order->getIncrementId() : null,
             ]);
         }
