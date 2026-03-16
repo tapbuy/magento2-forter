@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tapbuy\Forter\Plugin\Order;
 
-use Exception;
 use Magento\Sales\Model\Order\Payment as MagentoPayment;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
 use Tapbuy\Forter\Api\RequestBuilder\OrderBuilderInterface;
@@ -42,13 +41,13 @@ class Payment
      * @param MagentoPayment $subject
      * @param callable $proceed
      * @return MagentoPayment
-     * @throws Exception
+     * @throws \Throwable
      */
     public function aroundPlace(MagentoPayment $subject, callable $proceed): MagentoPayment
     {
         try {
             return $proceed();
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             $this->notifyForterOfPaymentFailure($exception, $subject);
             throw $exception;
         }
@@ -57,11 +56,11 @@ class Payment
     /**
      * Send exception notification to TapBuy/Forter.
      *
-     * @param Exception $exception
+     * @param \Throwable $exception
      * @param MagentoPayment $subject
      * @return void
      */
-    private function notifyForterOfPaymentFailure(Exception $exception, MagentoPayment $subject): void
+    private function notifyForterOfPaymentFailure(\Throwable $exception, MagentoPayment $subject): void
     {
         try {
             // Only process payments from Tapbuy headless checkout when enabled.
@@ -96,7 +95,7 @@ class Payment
                 'order_id' => $order->getIncrementId(),
                 'original_exception' => $exception->getMessage(),
             ]);
-        } catch (Exception $ex) {
+        } catch (\RuntimeException $ex) {
             $this->logger->logException('Failed to send Forter payment failure notification', $ex, [
                 'order_id' => $order->getIncrementId() ?? null,
             ]);
