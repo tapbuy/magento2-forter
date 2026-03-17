@@ -124,7 +124,7 @@ class Customer implements CustomerBuilderInterface
         $customer = null;
         try {
             $customer = $this->getCustomer($order);
-        } catch (NoSuchEntityException $e) { // phpcs:ignore Magento2.CodeAnalysis.EmptyBlock.DetectedCatch
+        } catch (NoSuchEntityException) { // phpcs:ignore Magento2.CodeAnalysis.EmptyBlock.DetectedCatch
             // Customer not found or not logged in - this is expected for guest orders
         } catch (LocalizedException $e) {
             $this->logger->logException('Error retrieving customer data', $e, [
