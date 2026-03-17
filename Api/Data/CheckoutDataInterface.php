@@ -25,10 +25,6 @@ interface CheckoutDataInterface
 
     // 3DS authentication options
     public const THREE_DS_AUTH_ALWAYS = 'always';
-    public const THREE_DS_AUTH_NEVER = 'never';
-
-    // Response keys from tapbuy-api fraud detection
-    public const THREE_DS_AUTH_ON_EXCLUSION_KEY = 'threeDsAuthOnExclusion';
 
     /**
      * Initialize Forter data from payment additional information.
@@ -68,18 +64,4 @@ interface CheckoutDataInterface
      */
     public function getCollectedForterData(): ?string;
 
-    /**
-     * Set 3DS authentication on exclusion setting.
-     *
-     * @param string $threeDsAuthOnExclusion
-     * @return void
-     */
-    public function setThreeDsAuthOnExclusion(string $threeDsAuthOnExclusion): void;
-
-    /**
-     * Get 3DS authentication on exclusion setting.
-     *
-     * @return string
-     */
-    public function getThreeDsAuthOnExclusion(): string;
 }

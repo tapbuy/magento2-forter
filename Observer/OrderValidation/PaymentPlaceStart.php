@@ -110,9 +110,6 @@ class PaymentPlaceStart implements ObserverInterface
                 $threeDsAuthOnExclusion
             );
 
-            // Also store in CheckoutData for immediate access by ForterDataBuilder
-            $this->checkoutData->setThreeDsAuthOnExclusion($threeDsAuthOnExclusion);
-
             $this->logger->info('Forter fraud detection result', [
                 'order_id' => $order->getIncrementId(),
                 'status' => $data[ForterResponseParser::RESPONSE_STATUS_KEY] ?? null,

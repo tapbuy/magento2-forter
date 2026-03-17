@@ -23,11 +23,6 @@ class CheckoutData implements CheckoutDataInterface
     private ?string $collectedForterData = null;
 
     /**
-     * @var string
-     */
-    private string $threeDsAuthOnExclusion = self::THREE_DS_AUTH_ALWAYS;
-
-    /**
      * Set the payment to read Forter data from.
      *
      * @param OrderPaymentInterface $payment
@@ -83,19 +78,4 @@ class CheckoutData implements CheckoutDataInterface
         return $this->collectedForterData;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function setThreeDsAuthOnExclusion(string $threeDsAuthOnExclusion): void
-    {
-        $this->threeDsAuthOnExclusion = $threeDsAuthOnExclusion;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getThreeDsAuthOnExclusion(): string
-    {
-        return $this->threeDsAuthOnExclusion;
-    }
 }
