@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tapbuy\Forter\Model\RequestBuilder;
 
+use Magento\Framework\App\RequestInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
@@ -16,10 +17,12 @@ class BasicInfo implements BasicInfoBuilderInterface
     /**
      * @param CheckoutDataInterface $checkoutData
      * @param RemoteAddress $remote
+     * @param RequestInterface $request
      */
     public function __construct(
         private readonly CheckoutDataInterface $checkoutData,
-        private readonly RemoteAddress $remote
+        private readonly RemoteAddress $remote,
+        private readonly RequestInterface $request
     ) {
     }
 
@@ -31,19 +34,14 @@ class BasicInfo implements BasicInfoBuilderInterface
      */
     public function getConnectionInformation(OrderInterface $order): array
     {
-        $headers = getallheaders();
-        if (!is_array($headers)) {
-            $headers = [];
-        }
-
-        $userAgent = $this->getUserAgent($headers);
+        $userAgent = $this->getUserAgent();
         if (str_contains($userAgent, 'CyberSource')) {
             return [];
         }
 
         return [
             'customerIP' => $this->getRemoteIp($order),
-            'userAgent' => $this->getUserAgent($headers),
+            'userAgent' => $userAgent,
             'fraudDetectionCookie' => $this->checkoutData->getForterToken(),
             'merchantDeviceIdentifier' => null
         ];
@@ -72,25 +70,17 @@ class BasicInfo implements BasicInfoBuilderInterface
     /**
      * Get user agent.
      *
-     * @param array $headers
      * @return string
      */
-    private function getUserAgent(array $headers): string
+    private function getUserAgent(): string
     {
-        $userAgent = '';
+        $userAgent = $this->request->getHeader('User-Agent');
 
-        $userAgentKey = '';
-        if (array_key_exists('User-Agent', $headers)) {
-            $userAgentKey = 'User-Agent';
-        } elseif (array_key_exists('user-agent', $headers)) {
-            $userAgentKey = 'user-agent';
+        if ($userAgent === false || $userAgent === null) {
+            return '';
         }
 
-        if ($userAgentKey !== '') {
-            $userAgent = substr($headers[$userAgentKey], 0, self::MAX_HEADER_LENGTH);
-        }
-
-        return $userAgent;
+        return substr((string) $userAgent, 0, self::MAX_HEADER_LENGTH);
     }
 
     /**
