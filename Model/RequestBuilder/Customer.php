@@ -12,6 +12,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderAddressInterface;
 use Tapbuy\Forter\Api\RequestBuilder\CustomerBuilderInterface;
+use Tapbuy\RedirectTracking\Api\LoggerInterface;
 
 class Customer implements CustomerBuilderInterface
 {
@@ -21,10 +22,12 @@ class Customer implements CustomerBuilderInterface
     /**
      * @param Session $session
      * @param CustomerRepositoryInterface $customerRepository
+     * @param LoggerInterface $logger
      */
     public function __construct(
         private readonly Session $session,
-        private readonly CustomerRepositoryInterface $customerRepository
+        private readonly CustomerRepositoryInterface $customerRepository,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -121,8 +124,13 @@ class Customer implements CustomerBuilderInterface
         $customer = null;
         try {
             $customer = $this->getCustomer($order);
-        } catch (NoSuchEntityException | LocalizedException $e) {
+        } catch (NoSuchEntityException $e) { // phpcs:ignore Magento2.CodeAnalysis.EmptyBlock.DetectedCatch
             // Customer not found or not logged in - this is expected for guest orders
+        } catch (LocalizedException $e) {
+            $this->logger->logException('Error retrieving customer data', $e, [
+                'order_id' => $order->getId(),
+                'order_number' => $order->getIncrementId(),
+            ]);
         }
         // Customer not logged in.
         if ($customer === null) {
