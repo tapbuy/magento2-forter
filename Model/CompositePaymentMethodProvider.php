@@ -33,6 +33,6 @@ class CompositePaymentMethodProvider implements PaymentMethodProviderInterface
             }
         }
 
-        return array_unique(array_merge(...$methodsCollections));
+        return $methodsCollections ? array_unique(array_merge(...$methodsCollections)) : [];
     }
 }
