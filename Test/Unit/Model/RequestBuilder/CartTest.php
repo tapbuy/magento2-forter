@@ -6,6 +6,7 @@ namespace Tapbuy\Forter\Test\Unit\Model\RequestBuilder;
 
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderItemInterface;
+use Magento\Sales\Model\Order;
 use PHPUnit\Framework\TestCase;
 use Tapbuy\Forter\Model\RequestBuilder\Cart;
 
@@ -44,7 +45,7 @@ class CartTest extends TestCase
         $item2->method('getProductId')->willReturn(102);
         $item2->method('getSku')->willReturn('JNS-002');
 
-        $order = $this->createMock(OrderInterface::class);
+        $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
         $order->method('getAllVisibleItems')->willReturn([$item1, $item2]);
 
         $result = $this->builder->getCartItems($order);
@@ -57,7 +58,7 @@ class CartTest extends TestCase
 
     public function testGetCartItemsReturnsEmptyForEmptyOrder(): void
     {
-        $order = $this->createMock(OrderInterface::class);
+        $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
         $order->method('getAllVisibleItems')->willReturn([]);
 
         $this->assertSame([], $this->builder->getCartItems($order));

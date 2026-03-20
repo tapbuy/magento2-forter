@@ -10,6 +10,7 @@ use Magento\Customer\Model\Session;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Sales\Api\Data\OrderAddressInterface;
 use Magento\Sales\Api\Data\OrderInterface;
+use Magento\Sales\Model\Order;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Tapbuy\Forter\Model\RequestBuilder\Customer;
@@ -49,7 +50,7 @@ class CustomerTest extends TestCase
 
     public function testGetPrimaryDeliveryDetailsReturnsPhysicalForStandardOrder(): void
     {
-        $order = $this->createMock(OrderInterface::class);
+        $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
         $order->method('getIsVirtual')->willReturn(false);
         $order->method('getShippingMethod')->willReturn('flatrate_flatrate');
         $order->method('getShippingAmount')->willReturn(5.99);
@@ -64,7 +65,7 @@ class CustomerTest extends TestCase
 
     public function testGetPrimaryRecipientReturnsEmptyWhenNoShippingAddress(): void
     {
-        $order = $this->createMock(OrderInterface::class);
+        $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
         $order->method('getShippingAddress')->willReturn(null);
 
         $this->assertSame([], $this->builder->getPrimaryRecipient($order));
@@ -73,7 +74,7 @@ class CustomerTest extends TestCase
     public function testGetPrimaryRecipientIncludesPhoneWhenPresent(): void
     {
         $address = $this->createAddressMock('John', 'Doe', 'john@example.com', '+33612345678');
-        $order = $this->createMock(OrderInterface::class);
+        $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
         $order->method('getShippingAddress')->willReturn($address);
         $order->method('getCustomerEmail')->willReturn('john@example.com');
 
@@ -86,7 +87,7 @@ class CustomerTest extends TestCase
     public function testGetPrimaryRecipientOmitsPhoneWhenNull(): void
     {
         $address = $this->createAddressMock('John', 'Doe', 'john@example.com', null);
-        $order = $this->createMock(OrderInterface::class);
+        $order = $this->getMockBuilder(Order::class)->disableOriginalConstructor()->getMock();
         $order->method('getShippingAddress')->willReturn($address);
 
         $result = $this->builder->getPrimaryRecipient($order);
@@ -163,14 +164,18 @@ class CustomerTest extends TestCase
 
     public function testGetBillingDetailsReturnsFullAddressData(): void
     {
-        $address = $this->createAddressMock('Bill', 'Payer', 'bill@example.com');
+        $address = $this->createMock(OrderAddressInterface::class);
+        $address->method('getFirstname')->willReturn('Bill');
+        $address->method('getLastname')->willReturn('Payer');
+        $address->method('getEmail')->willReturn('bill@example.com');
+        $address->method('getTelephone')->willReturn('+33100000000');
         $address->method('getStreet')->willReturn(['123 Main St', 'Apt 4']);
         $address->method('getCity')->willReturn('Paris');
         $address->method('getPostcode')->willReturn('75001');
         $address->method('getCountryId')->willReturn('FR');
         $address->method('getRegion')->willReturn('Île-de-France');
         $address->method('getCompany')->willReturn('ACME');
-        $address->method('getTelephone')->willReturn('+33100000000');
+        $address->method('getCustomerAddressId')->willReturn(null);
 
         $order = $this->createMock(OrderInterface::class);
         $order->method('getBillingAddress')->willReturn($address);

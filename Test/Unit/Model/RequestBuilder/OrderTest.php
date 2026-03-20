@@ -7,6 +7,7 @@ namespace Tapbuy\Forter\Test\Unit\Model\RequestBuilder;
 use Magento\Sales\Api\Data\OrderAddressInterface;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
+use Magento\Sales\Model\Order as SalesOrder;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Tapbuy\Forter\Api\RequestBuilder\BasicInfoBuilderInterface;
@@ -63,7 +64,7 @@ class OrderTest extends TestCase
         $shippingAddress->method('getCompany')->willReturn(null);
         $shippingAddress->method('getTelephone')->willReturn('+33100000000');
 
-        $order = $this->createMock(OrderInterface::class);
+        $order = $this->getMockBuilder(SalesOrder::class)->disableOriginalConstructor()->getMock();
         $order->method('getIncrementId')->willReturn('100000001');
         $order->method('getCreatedAt')->willReturn('2024-01-15 10:00:00');
         $order->method('getOrderCurrencyCode')->willReturn('EUR');
@@ -101,7 +102,7 @@ class OrderTest extends TestCase
         $this->customer->method('getCustomerAccountData')->willReturn([]);
         $this->payment->method('getPaymentData')->willReturn([]);
 
-        $order = $this->createMock(OrderInterface::class);
+        $order = $this->getMockBuilder(SalesOrder::class)->disableOriginalConstructor()->getMock();
         $order->method('getIncrementId')->willReturn('100000002');
         $order->method('getCreatedAt')->willReturn(null);
         $order->method('getOrderCurrencyCode')->willReturn('USD');

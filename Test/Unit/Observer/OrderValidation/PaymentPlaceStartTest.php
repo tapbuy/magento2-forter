@@ -9,6 +9,7 @@ use Magento\Framework\Event;
 use Magento\Framework\Validation\ValidationException;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
+use Magento\Sales\Model\Order\Payment as OrderPayment;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
@@ -55,7 +56,7 @@ class PaymentPlaceStartTest extends TestCase
 
     private function createObserverWithPayment(): array
     {
-        $payment = $this->createMock(OrderPaymentInterface::class);
+        $payment = $this->getMockBuilder(OrderPayment::class)->disableOriginalConstructor()->getMock();
         $event = $this->getMockBuilder(Event::class)
             ->disableOriginalConstructor()
             ->addMethods(['getPayment'])
@@ -208,7 +209,7 @@ class PaymentPlaceStartTest extends TestCase
         $payment->method('getOrder')->willReturn($order);
 
         $this->orderRequestBuilder->method('buildFraudDetectionPayload')->willReturn(['payload']);
-        $this->tapbuyService->method('sendRequest')->willReturn(null);
+        $this->tapbuyService->method('sendRequest')->willReturn(false);
         $this->responseParser->method('parse')
             ->willThrowException(new ValidationException(__('Bad response')));
 

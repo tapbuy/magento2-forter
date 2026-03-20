@@ -8,6 +8,8 @@ use Magento\Framework\App\RequestInterface;
 use Magento\Framework\HTTP\PhpEnvironment\RemoteAddress;
 use Magento\Sales\Api\Data\OrderInterface;
 use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\Store;
+use Magento\Sales\Model\Order as SalesOrder;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Tapbuy\Forter\Api\Data\CheckoutDataInterface;
@@ -108,11 +110,11 @@ class BasicInfoTest extends TestCase
 
     public function testGetAdditionalIdentifiersReturnsStoreInfoAndOrderStage(): void
     {
-        $store = $this->createMock(StoreInterface::class);
+        $store = $this->getMockBuilder(Store::class)->disableOriginalConstructor()->getMock();
         $store->method('getUrl')->willReturn('https://store.example.com/');
         $store->method('getName')->willReturn('Test Store');
 
-        $order = $this->createMock(OrderInterface::class);
+        $order = $this->getMockBuilder(SalesOrder::class)->disableOriginalConstructor()->getMock();
         $order->method('getStore')->willReturn($store);
 
         $result = $this->builder->getAdditionalIdentifiers($order, 'BEFORE_PAYMENT_ACTION');
