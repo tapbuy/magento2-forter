@@ -63,5 +63,4 @@ interface CheckoutDataInterface
      * @return string|null
      */
     public function getCollectedForterData(): ?string;
-
 }

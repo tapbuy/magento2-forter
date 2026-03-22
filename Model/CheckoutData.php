@@ -77,5 +77,4 @@ class CheckoutData implements CheckoutDataInterface
     {
         return $this->collectedForterData;
     }
-
 }
