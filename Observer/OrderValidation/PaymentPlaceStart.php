@@ -59,7 +59,7 @@ class PaymentPlaceStart implements ObserverInterface
      */
     public function execute(Observer $observer): void
     {
-        $isPaymentDeclined = false;
+        $order = null;
 
         try {
             /** @var OrderPaymentInterface $payment */
@@ -97,18 +97,9 @@ class PaymentPlaceStart implements ObserverInterface
                 ?? CheckoutDataInterface::THREE_DS_AUTH_ALWAYS;
 
             // Store decision in payment additional information
-            $payment->setAdditionalInformation(
-                self::PRE_DECISION_KEY,
-                $forterDecision
-            );
-            $payment->setAdditionalInformation(
-                self::PRE_RECOMMENDATIONS_KEY,
-                $recommendations
-            );
-            $payment->setAdditionalInformation(
-                self::THREE_DS_AUTH_ON_EXCLUSION_KEY,
-                $threeDsAuthOnExclusion
-            );
+            $payment->setAdditionalInformation(self::PRE_DECISION_KEY, $forterDecision);
+            $payment->setAdditionalInformation(self::PRE_RECOMMENDATIONS_KEY, $recommendations);
+            $payment->setAdditionalInformation(self::THREE_DS_AUTH_ON_EXCLUSION_KEY, $threeDsAuthOnExclusion);
 
             $this->logger->info('Forter fraud detection result', [
                 'order_id' => $order->getIncrementId(),
@@ -118,44 +109,54 @@ class PaymentPlaceStart implements ObserverInterface
                 '3ds_auth_on_exclusion' => $threeDsAuthOnExclusion,
             ]);
 
-            if ($forterDecision !== self::ACTION_DECLINE) {
-                return;
-            }
-
-            // If Forter recommends 3DS challenge, let the payment proceed to give customer a chance to verify
-            if (in_array('VERIFICATION_REQUIRED_3DS_CHALLENGE', $recommendations, true)) {
-                $this->logger->info('Forter decline bypassed for 3DS challenge', [
-                    'order_id' => $order->getIncrementId(),
-                ]);
-                return;
-            }
-
-            $isPaymentDeclined = true;
-
-            $this->logger->warning('Forter declined order', [
-                'order_id' => $order->getIncrementId(),
-                'recommendations' => $recommendations,
-            ]);
+            $this->evaluateForterDecision($forterDecision, $recommendations, $order->getIncrementId());
         } catch (PaymentDeclinedException $e) {
             throw $e;
         } catch (ValidationException $e) {
             $this->logger->logException('Forter fraud detection returned an unexpected or invalid response', $e, [
-                'order_id' => isset($order) ? $order->getIncrementId() : null,
+                'order_id' => $order?->getIncrementId(),
             ]);
         } catch (LocalizedException $e) {
             $this->logger->logException('Magento-level error during Forter fraud detection', $e, [
-                'order_id' => isset($order) ? $order->getIncrementId() : null,
+                'order_id' => $order?->getIncrementId(),
             ]);
         } catch (\RuntimeException $e) {
             $this->logger->logException('Runtime error during Forter fraud detection', $e, [
-                'order_id' => isset($order) ? $order->getIncrementId() : null,
+                'order_id' => $order?->getIncrementId(),
             ]);
         }
+    }
 
-        if ($isPaymentDeclined) {
-            // Break payment process with the error message to the customer.
-            throw new PaymentDeclinedException(__($this->getPreDeclineMsg()));
+    /**
+     * Evaluate the Forter decision and throw PaymentDeclinedException if payment should be blocked.
+     *
+     * @param string $forterDecision
+     * @param array $recommendations
+     * @param string|null $orderId
+     * @return void
+     * @throws PaymentDeclinedException
+     */
+    private function evaluateForterDecision(string $forterDecision, array $recommendations, ?string $orderId): void
+    {
+        if ($forterDecision !== self::ACTION_DECLINE) {
+            return;
         }
+
+        // If Forter recommends 3DS challenge, let the payment proceed to give customer a chance to verify
+        if (in_array('VERIFICATION_REQUIRED_3DS_CHALLENGE', $recommendations, true)) {
+            $this->logger->info('Forter decline bypassed for 3DS challenge', [
+                'order_id' => $orderId,
+            ]);
+            return;
+        }
+
+        $this->logger->warning('Forter declined order', [
+            'order_id' => $orderId,
+            'recommendations' => $recommendations,
+        ]);
+
+        // Break payment process with the error message to the customer.
+        throw new PaymentDeclinedException(__($this->getPreDeclineMsg()));
     }
 
     /**
